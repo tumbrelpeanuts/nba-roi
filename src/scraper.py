@@ -50,6 +50,7 @@ def parse_table(df):
         return df
     
     # Stephen Curry, G
+    # split into name and position
     split = df["name"].str.rsplit(", ", n=1, expand=True)
     df["player_name"] = split[0]
     df["position"] = split[1]
@@ -59,6 +60,7 @@ def parse_table(df):
 
     # cleaning salary: it's in string
     # $9,423,869
+    # strip symbols and cast to int
     df["salary"] = (
         df["salary"]
         #.str.strip()
@@ -79,14 +81,14 @@ def scrape(limit=None):
     for page in tqdm(range(1, 15), desc="Scraping pages"): # pages 1-3, see if sleep bypasses block
         df = get_page(page)
 
-        if df is None:
+        if df is None: # page failed or doesn't exist, stop early
             break
 
         clean_df = parse_table(df)
 
         for _, row in clean_df.iterrows():
             all_rows.append(row)
-            if limit is not None and len(all_rows) >= limit:
+            if limit is not None and len(all_rows) >= limit: # early exit if row cap hit
                 return pd.DataFrame(all_rows).reset_index(drop=True)
         
         time.sleep(3) # wait 3 seconds in between pages
