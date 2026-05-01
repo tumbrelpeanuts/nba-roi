@@ -6,6 +6,7 @@ from unidecode import unidecode
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = BASE_DIR / "data" / "raw"
 PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
+PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 TEAM_MAP = {
@@ -25,6 +26,12 @@ def normalize_name(name):
     return unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
 
 
+################################################################################
+# Cleaning BREF data 
+##### 2024-25 NBA Player Stats: Per Game
+##### 2024-25 NBA Player Stats: Advanced
+################################################################################
+
 def clean_per_game(df):
     df = df[df["Rk"] != "Rk"].copy()
 
@@ -40,7 +47,7 @@ def clean_per_game(df):
     )
 
     # Traded players — BBRef uses TOT, 2TM, or 3TM for multi-team totals
-    # Removing traded players from analysis
+    # Removing duplicates traded players
     traded = {"TOT", "2TM", "3TM"} 
     df_tot = df[df["team_abbr"].isin(traded)] 
     df_single = df[~df["player_name"].isin(df_tot["player_name"])]
@@ -51,7 +58,7 @@ def clean_per_game(df):
     for col in num_cols:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-
+    # df = df[df["player_name"] != "League Average"]
     keep = ["player_name", "team_abbr", "pos", "age", "G", "GS", "MP", "FG%", 
             "3P%", "FT%", "TRB", "AST", "STL", "BLK", "TOV", "PTS"]    
     return df[keep].reset_index(drop=True)
@@ -73,7 +80,7 @@ def clean_advanced(df):
     )
 
     # Traded players — BBRef uses TOT, 2TM, or 3TM for multi-team totals
-    # Removing traded players from analysis
+    # Removing duplicates traded players
     traded = {"TOT", "2TM", "3TM"} 
     df_tot = df[df["team_abbr"].isin(traded)] # team_abbr
     df_single = df[~df["player_name"].isin(df_tot["player_name"])]
@@ -86,7 +93,9 @@ def clean_advanced(df):
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
 
-    keep = ["player_name", "team_abbr", "PER", "TS%", "USG%", "WS", "WS/48", "BPM", "VORP"]
+    # df = df[df["player_name"] != "League Average"]
+    keep = ["player_name", "team_abbr", "PER", "TS%", "USG%", "WS", "WS/48", 
+            "BPM", "VORP"]
     return df[keep].reset_index(drop=True)
 
 
@@ -103,6 +112,12 @@ def clean_bref_data():
     clean_adv_game.to_csv(PROCESSED_DATA_DIR / "bref_advanced_stats.csv", index=False)
     print(f"Saved bref_advanced_stats.csv to data/processed")
 
+
+
+################################################################################
+# Cleaning ESPN Salaries
+##### NBA Player Salaries - 2024-2025
+################################################################################
 
 def clean_espn(df):
 
@@ -152,8 +167,57 @@ def clean_espn_data():
 
 
 
+################################################################################
+# Cleaning NBA Standings
+##### NBA Standings
+################################################################################
+
+def clean_standings(df):
+    df["team_name"] = df["TeamCity"] + " " + df["TeamName"]
+    df["team_abbr"] = df["team_name"].map(TEAM_MAP)
+
+    df["overall_rank"] = df["WinPCT"].rank(ascending=False, method="min").astype(int)
+
+    df = df.rename(columns={
+        "WINS": "wins", 
+        "LOSSES": "losses",
+        "WinPCT": "Win_PCT",
+        "HOME": "home_record",
+        "ROAD": "road_record",
+        "Conference": "conference"
+    })
+
+
+    keep = ["team_abbr", "team_name", "wins", "losses", "Win_PCT", "home_record",
+             "road_record", "conference", "overall_rank"]
+    return df[keep].reset_index(drop=True)
+
+
+def clean_standings_data():
+    standings_raw = pd.read_csv(RAW_DATA_DIR / "standings.csv")
+
+    standings_clean = clean_standings(standings_raw)
+
+    missing = standings_clean[standings_clean["team_abbr"].isna()] 
+    if not missing.empty: 
+        print(f"{len(missing)} teams missing abbreviation mapping:") 
+        print(missing["team_name"].tolist())
+    else:
+        print(f"Team mapped successfully")
+
+    standings_clean.to_csv(PROCESSED_DATA_DIR / "standings.csv", index=False)
+    print(f"Saved standings.csv to data/processed")
+
+
+
+################################################################################
+### Calling All Cleaning Functions
+################################################################################
+
 def main():
     clean_bref_data()
+    clean_espn_data()
+    clean_standings_data()
     clean_espn_data()
 
 
