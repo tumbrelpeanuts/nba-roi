@@ -7,7 +7,6 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = BASE_DIR / "data" / "raw"
-PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -32,10 +31,11 @@ def scrape():
     # for page in range(1,15): 
     for page in tqdm(range(1, 15), desc="Scraping ESPN pages"): # pages 1-3, see if sleep bypasses block
         df = get_page(page)
-        all_pages.append(df)
-        time.sleep(3) # wait 3 seconds in between pages
 
-    return pd.DataFrame(all_pages).reset_index(drop=True)
+        all_pages.append(df)
+        time.sleep(1.2) # wait 3 seconds in between pages
+
+    return pd.concat(all_pages, ignore_index=True)
 
 
 def main():
