@@ -7,8 +7,6 @@ RAW_DATA_DIR = BASE_DIR / "data" / "raw"
 
 def scrape():
     print("Fetching 2024-25 NBA standings from nba_api ...")
-    
-
     standings = leaguestandingsv3.LeagueStandingsV3(
         league_id = "00", 
         season="2024-25",
@@ -16,7 +14,6 @@ def scrape():
     )
 
     df = standings.get_data_frames()[0]
-
     return df
 
 
