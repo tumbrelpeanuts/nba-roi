@@ -98,6 +98,11 @@ This will:
 * Scrape NBA team standings from NBA API
 * Scrape Basketball-Reference NBA Player Stats per-game & advanced stats
 * Save to `data/raw/`
+  * bref_advanced_stats.csv 
+  * espn_salaries.csv 
+  * standings.csv 
+  * bref_per_game_stats.csv
+
 
 **NOTE**: I used sleep because the site sometimes rate-limits. The script waits one second between pages to avoid being rate-limited by ESPN. As a result, a full scrape takes about 15 seconds.
 
@@ -117,10 +122,17 @@ This will:
   * Remove repeated header rows and deduplicate traded players (`TOT`/`2TM`/`3TM`)
   * Normalize player names (handles accented characters)
 * ESPN Salary
+  * Remove repeated header rows
   * Convert salary strings → numeric
   * Standardize team names
 * NBA Team Standings
+  * Standardize team names
+  * Compute overall rank by win percentage
 * Output cleaned data to `data/processed/`
+  * bref_advanced_stats.csv 
+  * espn_salaries.csv 
+  * standings.csv 
+  * bref_per_game_stats.csv
 
 ---
 
@@ -134,8 +146,10 @@ uv run python src/integrate_data.py
 
 This will:
 
-* Merge multiple data sources
-* Create a unified dataset for analysis
+* Merge per-game stats + advanced stats (on `player_name`, `team_abbr`)
+* Join with ESPN salaries, then team standings
+* Compute `ws_per_million` (win shares per $1M salary)
+* Output `master.csv` to `data/processed/`
 
 ---
 
@@ -149,6 +163,10 @@ uv run python src/analyze_visualize.py
 
 This will:
 
-* Generate summary statistics
-* Create visualizations (plots/graphs)
-
+* Fit a linear regression to estimate expected salary from performance stats
+* Generate and save plots to `results/`:
+  * `correlation_heatmap.png` — correlations between salary, stats, and efficiency
+  * `team_payroll_vs_winpct.png` — team payroll vs win percentage
+  * `team_ws_per_million.png` — team salary efficiency (WS per $1M)
+  * `actual_vs_expected_salary.png` — actual vs model-predicted salary by position
+  * `dumbbell_salary_comparison.png` — top 15 most underpaid players
