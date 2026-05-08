@@ -28,12 +28,16 @@ wheels/
 # uv
 .python-version
 
+# text files
+scratch.txt
 
 # files
 scraper.py
 # src/scraper_bref.py
 src/scraper_hoopshype.py
 # src/scraper_nba_api.py
+scratch.py
+old-files/
 
 # notebooks
 notebooks/01_data_collection.ipynb
