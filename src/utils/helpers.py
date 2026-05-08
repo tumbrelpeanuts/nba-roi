@@ -17,7 +17,7 @@ def fit_position_model(group, features):
     if len(group) <= len(features) + 1:
         group["expected_salary"] = np.nan
         return group
-    log_y = np.log(group["salary"])
+    log_y = np.log(group["salary"]) # remove negative predictions
     model = LinearRegression().fit(group[features], log_y)
     group["expected_salary"] = np.exp(model.predict(group[features]))
     return group

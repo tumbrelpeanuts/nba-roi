@@ -14,4 +14,6 @@ POSITION_COLORS = {
     "Center":         "#F44336",
 }
 
+POSITION = [ "Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center"]
+
 FEATURES = ["WS", "VORP", "BPM", "PTS", "AST", "TRB", "USG%", "age", "G"]
