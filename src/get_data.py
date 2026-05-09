@@ -3,6 +3,7 @@ from pathlib import Path
 from scraper_bref import scrape as scraper_bref
 from scraper_espn import scrape as scraper_espn
 from scraper_nba_api import scrape as scraper_nba_api
+from scrape_bref_teams import scrape as scraper_player_exp
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = BASE_DIR / "data" / "raw"
@@ -37,6 +38,14 @@ def nba_api():
     print("Saved standings.csv to to data/raw")
 
 
+### Basketball Reference Player's Years of Experience
+def player_exp():
+    print("\n\n### Fetching Player's Years of Experience data ###")
+    df_exp = scraper_player_exp()
+    df_exp.to_csv(RAW_DATA_DIR / "player_exp.csv", index=False)
+    print("Saved player_exp.csv to to data/raw") 
+
+
 def main():
     ### Basketball-Reference data
     bbref()
@@ -46,6 +55,9 @@ def main():
 
     ###  NBA Team Standings data
     nba_api()
+
+    ### Player's Years of Experience
+    player_exp()
 
 
 if __name__ == "__main__":
