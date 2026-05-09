@@ -30,7 +30,7 @@ def fetch_table(url, table_id):
 def scrape():
     print("Scraping per_game ...")
     per_game = fetch_table(PER_GAME_URL, "per_game_stats")
-    time.sleep(4) # prevent from being blocked
+    time.sleep(2) # prevent from being blocked
 
     print("Scraping advanced ...")
     adv_game = fetch_table(ADV_URL, "advanced")
