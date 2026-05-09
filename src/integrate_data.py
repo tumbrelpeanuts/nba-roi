@@ -10,8 +10,9 @@ def load_data():
     advanced = pd.read_csv(PROCESSED_DATA_DIR / "bref_advanced_stats.csv")
     salaries = pd.read_csv(PROCESSED_DATA_DIR / "espn_salaries.csv")
     standings = pd.read_csv(PROCESSED_DATA_DIR / "standings.csv")
+    player_exp = pd.read_csv(PROCESSED_DATA_DIR / "player_exp.csv")
     
-    return per_game, advanced, salaries, standings
+    return per_game, advanced, salaries, standings, player_exp
 
 
 def remove_traded_players(per_game, advanced):
@@ -28,7 +29,7 @@ def remove_traded_players(per_game, advanced):
 
 
 def integrate():
-    per_game, advanced, salaries, standings = load_data()
+    per_game, advanced, salaries, standings, exp = load_data()
     per_game = per_game[per_game["player_name"] != "League Average"]
     advanced = advanced[advanced["player_name"] != "League Average"]
     per_game, advanced = remove_traded_players(per_game, advanced)
@@ -47,6 +48,11 @@ def integrate():
     master = pd.merge(master, standings, on="team_abbr", how="left")
     print(f"After standings join: {len(master)} players")
 
+    # Join 4 
+    master = pd.merge(master, exp[["player_name", "team_abbr", "exp"]], 
+                      on=["player_name", "team_abbr"], how="left")
+    print(f"After exp join: {len(master)} players")
+
     # win share per million
     master["ws_per_million"] = master["WS"] / (master["salary"] / 1000000)
 
@@ -57,8 +63,16 @@ def integrate():
     else:
         print("All teams matched with standings")
 
-    return master
 
+    missing_exp = master[master["exp"].isna()]["player_name"].tolist()
+    if missing_exp:
+        print(f"{len(missing_exp)} players missing exp data: {missing_exp}")
+        # print(f"\n{master["exp"].isna().sum()}")
+    else:
+        print("All players matched with exp data")
+        # print(f"\n{master["exp"].isna().sum()}")
+
+    return master
 
 
 def main():
@@ -66,7 +80,6 @@ def main():
 
     master.to_csv(PROCESSED_DATA_DIR / "master.csv", index=False)
     print("Saved master.csv to data/processed")
-
 
 
 if __name__ == "__main__":
