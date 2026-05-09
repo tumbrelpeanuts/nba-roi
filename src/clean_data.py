@@ -208,6 +208,31 @@ def clean_standings_data():
     standings_clean.to_csv(PROCESSED_DATA_DIR / "standings.csv", index=False)
     print(f"Saved standings.csv to data/processed")
 
+################################################################################
+# Cleaning Player's Years of Experience
+##### Player's Years of Experience
+################################################################################
+
+def clean_team_exp(df):
+    df = df.rename(columns={"Player": "player_name", "Pos": "pos", "Exp": "exp"})
+    df["player_name"] = (
+        df["player_name"]
+        .str.replace(r"\*$", "", regex=True)
+        .str.strip()
+        .apply(unidecode)
+    )
+    df["exp"] = df["exp"].replace("R", 0).astype(int)
+
+    keep = ["player_name", "pos", "exp", "team_abbr"]
+    return df[keep]
+
+
+def clean_team_exp_data():
+    exp_raw = pd.read_csv(RAW_DATA_DIR / "player_exp.csv")
+    exp_clean = clean_team_exp(exp_raw)
+    
+    exp_clean.to_csv(PROCESSED_DATA_DIR / "player_exp.csv", index=False)
+    print(f"Saved bref_per_game_stats.csv to data/processed")
 
 
 ################################################################################
@@ -219,6 +244,7 @@ def main():
     clean_espn_data()
     clean_standings_data()
     clean_espn_data()
+    clean_team_exp_data()
 
 
 
