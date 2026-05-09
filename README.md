@@ -18,6 +18,9 @@ This project analyzes NBA player salaries by combining multiple web data sources
 - BBREF NBA Player Stats: Per Game and Advanced 
   - https://www.basketball-reference.com/leagues/NBA_2025_per_game.html
   - https://www.basketball-reference.com/leagues/NBA_2025_advanced.html
+- BBREF all NBA team rosters for the 2024-25 season
+  - https://www.basketball-reference.com/teams/{team}/2025.html
+  - where team is NBA team abbrevation
 
 
 Note on source change
@@ -45,12 +48,14 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 ```bash
 uv sync
+uv run playwright install chromium
 ```
 
 **Alternative (without uv):**
 
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
 ---
@@ -68,6 +73,7 @@ src/
   integrate_data.py
   analyze_visualize.py
   scraper_bref.py
+  scrape_bref_teams.py
   scraper_espn.py
   scraper_nba_api.py
   utils/
@@ -79,7 +85,8 @@ results/
   team_payroll_vs_winpct.png
   team_ws_per_million.png
   actual_vs_expected_salary.png
-  dumbbell_salary_comparison.png
+  dumbbell_salary_diff_comparison.png
+  dumbbell_salary_diff-pct_comparison.png
 ```
 
 ---
@@ -94,17 +101,18 @@ uv run python src/get_data.py
 
 This will:
 
-* Scrape ESPN paler's salary data from 2024-25 season
+* Scrape ESPN player's salary data from 2024-25 season
 * Scrape NBA team standings from NBA API
 * Scrape Basketball-Reference NBA Player Stats per-game & advanced stats
+* Scrape Basketball-Reference team roster pages for all 30 NBA teams to extract each player's years of experience
 * Save to `data/raw/`
-  * bref_advanced_stats.csv 
   * espn_salaries.csv 
   * standings.csv 
   * bref_per_game_stats.csv
+  * bref_advanced_stats.csv 
+  * player_exp.csv
 
-
-**NOTE**: I used sleep because the site sometimes rate-limits. The script waits one second between pages to avoid being rate-limited by ESPN. As a result, a full scrape takes about 15 seconds.
+**NOTE**: The scraper waits ~1.2 seconds between team pages to avoid being rate-limited by Basketball-Reference. A full scrape of all 30 teams takes roughly 40 seconds.
 
 ---
 
@@ -133,6 +141,7 @@ This will:
   * espn_salaries.csv 
   * standings.csv 
   * bref_per_game_stats.csv
+  * player_exp.csv
 
 ---
 
@@ -169,4 +178,5 @@ This will:
   * `team_payroll_vs_winpct.png` — team payroll vs win percentage
   * `team_ws_per_million.png` — team salary efficiency (WS per $1M)
   * `actual_vs_expected_salary.png` — actual vs model-predicted salary by position
-  * `dumbbell_salary_comparison.png` — top 15 most underpaid players
+  * `dumbbell_salary_diff_comparison.png` — top 15 most underpaid players
+  * `dumbbell_salary_diff-pct_comparison.png` - top 15 most underpaid players by percentage gap, excluding CBA-mandated minimum contracts
