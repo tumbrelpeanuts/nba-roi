@@ -243,7 +243,6 @@ def main():
     clean_bref_data()
     clean_espn_data()
     clean_standings_data()
-    clean_espn_data()
     clean_team_exp_data()
 
 
