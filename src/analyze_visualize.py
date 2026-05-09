@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 import numpy as np
 
-from utils.constants import POSITION_COLORS, POSITION
+from utils.constants import POSITION_COLORS, POSITION, TIER_COLORS
 from utils.helpers import millions, build_analysis_df, build_team_df
 from pathlib import Path
 
@@ -181,6 +181,11 @@ def plot_dumbbell_salary_diff(df_temp):
 
 
 def plot_dumbbell_salary_pct_diff(df_temp):
+    # df_temp = df_temp[df_temp["salary"] >= 2_000_000] # 
+    df_temp = df_temp[df_temp["salary"] >= df_temp["cba_minimum"] * 1.1]
+    '''Players on CBA-mandated minimum contracts were excluded from the percentage 
+    gap analysis because their salaries are not performance-based.'''
+    
     top15 = df_temp.nlargest(15, "salary_pct_diff").sort_values("salary_pct_diff", ascending=True)
 
     actual = top15["salary"] / 1_000_000
@@ -201,7 +206,8 @@ def plot_dumbbell_salary_pct_diff(df_temp):
     ax.scatter(expected, y_pos, color="#FF9800", s=60, label="Expected Salary", zorder=3)
 
     # labels
-    offset = 0.15
+    x_range = expected.max() - actual.min()
+    offset = x_range * 0.015
     for i, (a, e) in enumerate(zip(actual, expected)):
         ax.text(a - offset, i, f"{a:.1f}", va="center", ha="right", fontsize=9)
         ax.text(e + offset, i, f"{e:.1f}", va="center", ha="left", fontsize=9)
@@ -222,7 +228,7 @@ def plot_dumbbell_salary_pct_diff(df_temp):
     ax.tick_params(left=False, bottom=False)
 
     #plt.tight_layout()
-    ax.set_xlim(left=-0.5)
+    # ax.set_xlim(left=-0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     plt.savefig(RESULTS_DIR / "dumbbell_salary_diff-pct_comparison.png", dpi=150, bbox_inches="tight")
     # plt.show()
