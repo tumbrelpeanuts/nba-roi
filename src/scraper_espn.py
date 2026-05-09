@@ -4,6 +4,7 @@ import time
 import io
 from tqdm import tqdm # to see if webscraping progress
 from pathlib import Path
+from playwright.sync_api import sync_playwright
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = BASE_DIR / "data" / "raw"
@@ -16,16 +17,24 @@ HEADERS = {
 }
 
 
-def get_page(page_num: int):
+def get_page(page, page_num: int):
     # "https://www.espn.com/nba/salaries/_/year/2025/page/"
     url = f"https://www.espn.com/nba/salaries/_/year/2025/page/{page_num}"
-    response = requests.get(url, headers=HEADERS, timeout=10)
-    response.raise_for_status()
-    table = pd.read_html(io.StringIO(response.text), attrs={"class": "tablehead"})
-    return table[0]
+    #response = requests.get(url, headers=HEADERS, timeout=10)
+    #response.raise_for_status()
+    # table = pd.read_html(io.StringIO(response.text), flavor="lxml") # attrs={"id": table_id}
+    # table = pd.read_html(io.StringIO(response.text), attrs={"class": "tablehead"}, flavor="lxml")
+    # table = pd.read_html(io.StringIO(response.text), attrs={"id": "players"}, flavor="lxml")
+    # table = pd.read_html(io.StringIO(response.text), attrs={"class": "mod-table"}, flavor="lxml")
+    #print(response.status_code)
+    #print(response.text[:3000])
+    page.goto(url, wait_until="domcontentloaded", timeout=15000) 
+    html = page.content() 
+    tables = pd.read_html(io.StringIO(html), flavor="lxml")
+    return tables[0]
 
 
-def scrape():
+'''def scrape():
     all_pages = []
 
     # for page in range(1,15): 
@@ -35,6 +44,17 @@ def scrape():
         all_pages.append(df)
         time.sleep(1.2) # wait 3 seconds in between pages
 
+    return pd.concat(all_pages, ignore_index=True)'''
+def scrape():
+    all_pages = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        pg = browser.new_page()
+        for page_num in range(1, 15):
+            print(f"Scraping page {page_num}/14 ...")
+            df = get_page(pg, page_num)
+            all_pages.append(df)
+        browser.close()
     return pd.concat(all_pages, ignore_index=True)
 
 
