@@ -1,6 +1,20 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from utils.constants import POSITION_MAP, FEATURES
+from utils.constants import POSITION_MAP, FEATURES, CBA_MINIMUMS
+
+
+def get_exp_tier(exp):
+    if exp < 2:
+        return "Rookie (0-2 yrs)"
+    elif exp < 6:
+        return "Mid-Experience (3-6 yrs)"
+    else:
+        return "Veteran (7+ yrs)"
+
+
+def get_cba_minimum(exp):
+    exp = min(int(exp), 10)
+    return CBA_MINIMUMS[exp]
 
 
 def millions(x, pos):
@@ -43,6 +57,8 @@ def build_analysis_df(df):
     df_temp["salary_pct_diff"]  = (df_temp["expected_salary"] - df_temp["salary"]) / df_temp["expected_salary"]
     df_temp["ws_per_million"]   = df_temp["WS"]   / (df_temp["salary"] / 1_000_000)
     df_temp["vorp_per_million"] = df_temp["VORP"]  / (df_temp["salary"] / 1_000_000)
+    df_temp["cba_minimum"] = df_temp["exp"].apply(get_cba_minimum)
+    df_temp["exp_tier"] = df_temp["exp"].apply(get_exp_tier)
 
     print(f"Players in analysis dataset: {len(df_temp)}")
     return df_temp
