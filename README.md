@@ -96,6 +96,7 @@ src/
     helpers.py
 
 results/
+  final_report.pdf
   correlation_heatmap.png
   team_payroll_vs_winpct.png
   team_ws_per_million.png
