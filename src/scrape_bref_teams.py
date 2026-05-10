@@ -40,7 +40,7 @@ def scrape():
         player = fetch_table(url, "roster", team)
 
         all_pages.append(player)
-        time.sleep(1.2)
+        time.sleep(1.9)
 
     return pd.concat(all_pages, ignore_index=True)
 

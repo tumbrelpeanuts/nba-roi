@@ -4,6 +4,7 @@ from scraper_bref import scrape as scraper_bref
 from scraper_espn import scrape as scraper_espn
 from scraper_nba_api import scrape as scraper_nba_api
 from scrape_bref_teams import scrape as scraper_player_exp
+import time
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = BASE_DIR / "data" / "raw"
@@ -55,7 +56,8 @@ def main():
 
     ###  NBA Team Standings data
     nba_api()
-
+    print("Brief 5 second sleep ...")
+    time.sleep(5) # prevent from being blocked
     ### Player's Years of Experience
     player_exp()
 
