@@ -61,6 +61,19 @@ playwright install chromium
 
 ---
 
+## How to Run the Project (End-to-End)
+
+Run the following commands in order:
+
+```bash
+uv run python src/get_data.py
+uv run python src/clean_data.py
+uv run python src/integrate_data.py
+uv run python src/analyze_visualize.py
+```
+
+---
+
 ## Project Structure
 
 ```
