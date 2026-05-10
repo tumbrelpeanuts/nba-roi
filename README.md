@@ -25,6 +25,7 @@ This project analyzes NBA player salaries by combining multiple web data sources
 
 Note on source change
 * The original proposal used HypeHoop (https://www.hoopshype.com/salaries/players/?season=2024) as the salary data source via its GraphQL API. When writing the script, it returned 401 Unauthorized errors, blocking all API access. I switched to ESPN's salary page as a replacement. It provides the same salary data and is publicly accessible.
+* ESPN implemented AWS WAF bot protection. The scraper was updated to use Playwright
 
 ---
 
