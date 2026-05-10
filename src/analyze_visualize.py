@@ -21,7 +21,7 @@ def plot_correlation_heatmap(df):
     """Heatmap of correlations between salary, performance stats, and efficiency."""
     cols = ["salary", "PTS", "TRB", "AST", "WS", "PER", "BPM", "VORP", "ws_per_million"]
  
-    fig, ax = plt.subplots(figsize=(10, 8))
+    _, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(df[cols].corr(), annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
     ax.set_title("Correlation: Performance Stats vs Salary", fontsize=14)
  
@@ -33,7 +33,7 @@ def plot_correlation_heatmap(df):
  
 def plot_team_payroll_vs_wins(team):
     """Scatter: team total salary vs win%, with regression line."""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    _, ax = plt.subplots(figsize=(12, 8))
  
     sns.scatterplot(data=team, x="total_salary", y="Win_PCT",
                     ax=ax, s=100, color="steelblue")
@@ -64,7 +64,6 @@ def plot_team_payroll_vs_wins(team):
  
     plt.tight_layout()
     plt.savefig(RESULTS_DIR / "team_payroll_vs_winpct.png", dpi=150)
-    # plt.show()
     print("Saved team_payroll_vs_winpct.png")
 
  
@@ -73,7 +72,7 @@ def plot_team_ws_per_million(team):
     team_ranked = team.sort_values("team_ws_per_million", ascending=True)
     top5 = team_ranked.nlargest(5, "team_ws_per_million")["team_abbr"].tolist()
  
-    fig, ax = plt.subplots(figsize=(10, 10))
+    _, ax = plt.subplots(figsize=(10, 10))
  
     bars = ax.barh(team_ranked["team_abbr"], team_ranked["team_ws_per_million"],
                    color="steelblue")
@@ -91,13 +90,19 @@ def plot_team_ws_per_million(team):
  
     plt.tight_layout()
     plt.savefig(RESULTS_DIR / "team_ws_per_million.png", dpi=150)
-    # plt.show()
     print("Saved team_ws_per_million.png")
  
  
 def plot_actual_vs_expected_salary(df_temp):
     """Scatter: actual salary vs model-predicted salary. Below diagonal = underpaid."""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    overpaid_offsets = {
+        "Stephen Curry":    (-20, 6),
+        "Bradley Beal":     (-21, 8),
+        "Rudy Gobert":      (0, 8),
+        "Fred VanVleet":    (-35, 8),
+        "Tyrese Haliburton": (-30, -10),
+    }
+    __, ax = plt.subplots(figsize=(12, 8))
  
     sns.scatterplot(data=df_temp, x="expected_salary", y="salary",
                     hue="position_full", palette=POSITION_COLORS, alpha=0.7, ax=ax)
@@ -105,11 +110,17 @@ def plot_actual_vs_expected_salary(df_temp):
     max_val = max(df_temp["expected_salary"].max(), df_temp["salary"].max())
     ax.plot([0, max_val], [0, max_val], color="black", linewidth=1.5,
             linestyle="--", label="Fair value (actual = expected)")
- 
-    most_underpaid = df_temp.nlargest(5, "salary_diff")
+    
+    most_underpaid = df_temp[df_temp["salary"] >= 10_000_000].nlargest(5, "salary_diff")
     for _, row in most_underpaid.iterrows():
         ax.annotate(row["player_name"], (row["expected_salary"], row["salary"]),
                     textcoords="offset points", xytext=(5, -10), fontsize=8)
+    
+    most_overpaid = df_temp[df_temp["salary"] >= 10_000_000].nsmallest(5, "salary_diff")
+    for _, row in most_overpaid.iterrows():
+        xytext = overpaid_offsets.get(row["player_name"], (5, 10))
+        ax.annotate(row["player_name"], (row["expected_salary"], row["salary"]),
+                    textcoords="offset points", xytext=xytext, fontsize=8)
  
     ax.set_title("Actual vs Expected Salary\n(below the line = underpaid relative to stats)", fontsize=14)
     ax.set_xlabel("Market Value Estimate (Millions USD)")
@@ -124,10 +135,8 @@ def plot_actual_vs_expected_salary(df_temp):
  
     plt.tight_layout()
     plt.savefig(RESULTS_DIR / "actual_vs_expected_salary.png", dpi=150)
-    # plt.show()
     print("Saved actual_vs_expected_salary.png")
  
-
 
 def plot_dumbbell_salary_diff(df_temp):
     top15 = df_temp.nlargest(15, "salary_diff").sort_values("salary_diff")
@@ -138,7 +147,7 @@ def plot_dumbbell_salary_diff(df_temp):
 
     y_pos = range(len(top15))
 
-    fig, ax = plt.subplots(figsize=(10, 7))
+    _, ax = plt.subplots(figsize=(10, 7))
 
     # draw connecting lines
     for i, (a, e) in enumerate(zip(actual, expected)):
@@ -155,10 +164,8 @@ def plot_dumbbell_salary_diff(df_temp):
     for i, (a, e) in enumerate(zip(actual, expected)):
         ax.text(a - offset, i, f"{a:.0f}", va="center", ha="right", fontsize=9)
         ax.text(e + offset, i, f"{e:.0f}", va="center", ha="left", fontsize=9)
-
     ax.set_yticks(y_pos)
     ax.set_yticklabels(players)
-    
     ax.set_title("Most Underpaid Players by Dollar Amount (Actual vs Expected Salary)", fontsize=14)
     ax.set_xlabel("Salary (Millions USD)")
     
@@ -172,20 +179,15 @@ def plot_dumbbell_salary_diff(df_temp):
     sns.despine(left=True, bottom=True)
     ax.tick_params(left=False, bottom=False)
 
-    #
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     plt.savefig(RESULTS_DIR / "dumbbell_salary_diff_comparison.png", dpi=150, bbox_inches="tight")
-    # plt.show()
     print("Saved dumbbell_salary_diff_comparison.png")
 
 
-
 def plot_dumbbell_salary_pct_diff(df_temp):
-    # df_temp = df_temp[df_temp["salary"] >= 2_000_000] # 
     df_temp = df_temp[df_temp["salary"] >= df_temp["cba_minimum"] * 1.1]
     '''Players on CBA-mandated minimum contracts were excluded from the percentage 
     gap analysis because their salaries are not performance-based.'''
-    
     top15 = df_temp.nlargest(15, "salary_pct_diff").sort_values("salary_pct_diff", ascending=True)
 
     actual = top15["salary"] / 1_000_000
@@ -193,7 +195,7 @@ def plot_dumbbell_salary_pct_diff(df_temp):
     players = top15["player_name"]
 
     y_pos = range(len(top15))
-    fig, ax = plt.subplots(figsize=(10, 7))
+    _, ax = plt.subplots(figsize=(10, 7))
 
     # draw connecting lines
     for i, (a, e) in enumerate(zip(actual, expected)):
@@ -211,10 +213,8 @@ def plot_dumbbell_salary_pct_diff(df_temp):
     for i, (a, e) in enumerate(zip(actual, expected)):
         ax.text(a - offset, i, f"{a:.1f}", va="center", ha="right", fontsize=9)
         ax.text(e + offset, i, f"{e:.1f}", va="center", ha="left", fontsize=9)
-        
     ax.set_yticks(y_pos)
     ax.set_yticklabels(players)
-    
     ax.set_title("Most Underpaid Players by % Below Expected Salary", fontsize=14)
     ax.set_xlabel("Salary (Millions USD)")
     ax.legend(
@@ -227,18 +227,10 @@ def plot_dumbbell_salary_pct_diff(df_temp):
     sns.despine(left=True, bottom=True)
     ax.tick_params(left=False, bottom=False)
 
-    #plt.tight_layout()
-    # ax.set_xlim(left=-0.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     plt.savefig(RESULTS_DIR / "dumbbell_salary_diff-pct_comparison.png", dpi=150, bbox_inches="tight")
-    # plt.show()
     print("Saved dumbbell_salary_diff-pct_comparison.png")
 
-
-# def dot_plot():
-# WS per $1M by position
-# Average underpaid gap by position
-# Distribution salaries by position
 
 def main():
     # load
