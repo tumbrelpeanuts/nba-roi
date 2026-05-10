@@ -19,6 +19,7 @@ This project analyzes NBA player salaries by combining multiple web data sources
   - https://www.basketball-reference.com/leagues/NBA_2025_per_game.html
   - https://www.basketball-reference.com/leagues/NBA_2025_advanced.html
 - BBREF all NBA team rosters for the 2024-25 season
+  - https://www.basketball-reference.com/teams
   - https://www.basketball-reference.com/teams/{team}/2025.html
   - where team is NBA team abbrevation
 
