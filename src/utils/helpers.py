@@ -55,10 +55,10 @@ def build_analysis_df(df):
     df_temp["salary_diff"]      = df_temp["expected_salary"] - df_temp["salary"]
     df_temp["value_ratio"]      = df_temp["salary"] / df_temp["expected_salary"]
     df_temp["salary_pct_diff"]  = (df_temp["expected_salary"] - df_temp["salary"]) / df_temp["expected_salary"]
-    df_temp["ws_per_million"]   = df_temp["WS"]   / (df_temp["salary"] / 1_000_000)
-    df_temp["vorp_per_million"] = df_temp["VORP"]  / (df_temp["salary"] / 1_000_000)
-    df_temp["cba_minimum"] = df_temp["exp"].apply(get_cba_minimum)
-    df_temp["exp_tier"] = df_temp["exp"].apply(get_exp_tier)
+    df_temp["ws_per_million"]   = df_temp["WS"] / (df_temp["salary"] / 1_000_000)
+    df_temp["vorp_per_million"] = df_temp["VORP"] / (df_temp["salary"] / 1_000_000)
+    df_temp["cba_minimum"]      = df_temp["exp"].apply(get_cba_minimum)
+    df_temp["exp_tier"]         = df_temp["exp"].apply(get_exp_tier)
 
     print(f"Players in analysis dataset: {len(df_temp)}")
     return df_temp
