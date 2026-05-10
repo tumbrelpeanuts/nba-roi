@@ -5,7 +5,7 @@ DSCI 510 | Final Project | Alexander Sanchez
 
 ## Overview
 
-This project analyzes NBA player salaries by combining multiple web data sources. The goal is to explore patterns in salaries across teams, positions, and other factors.
+This project investigates NBA salary efficiency for the 2024–25 season: which teams get the most value per dollar spent and which players are undervalued relative to their on-court production. Data was collected from Basketball-Reference (player performance stats and years of experience), ESPN (player salaries), and the NBA API (team standings), then cleaned, integrated, and analyzed in Python. The pipeline automatically scrapes and processes all data, fits a per-position regression model to estimate expected salaries, and produces six visualizations that explore the relationship between payroll and performance at both the player and team levels.
 
 ---
 
